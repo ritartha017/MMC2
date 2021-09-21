@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# gradient optimization algorithm in ruby
+
 require 'rubocop'
 require 'json'
 require 'yaml'
