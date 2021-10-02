@@ -70,4 +70,4 @@ def minimize
 end
 
 puts "\nx* = #{minimize}"
-puts "N iteratii = #{@k}"
+puts "N iterations = #{@k}"
