@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
-# Conjugate Gradient. Fletcher Reeves Algorithm
+# Conjugate Gradient.
+# Hestenes-Stiefel Algorithm
+# Fletcher Reeves Algorithm
+# Polak-Ribiere Algorithm
+
 require 'rubocop'
 
 @a = 4
@@ -22,6 +26,17 @@ def fetch_gk
   fetch_partial_derivatives
 end
 
+def fetch_dk(g1, beta, d)
+  [-g1[0] + beta * d[0],
+   -g1[1] + beta * d[1]]
+end
+
+def fetch_next_x(alfa, d)
+  @x[:x] = @x[:x] + alfa * d[0]
+  @x[:y] = @x[:y] + alfa * d[1]
+  @x
+end
+
 def gk_x_dk(g, d)
   g[0] * d[0] + g[1] * d[1]
 end
@@ -32,13 +47,7 @@ def dk_Q_dk(_g, d)
   multiplix1[0] * d[0] + multiplix1[1] * d[1]
 end
 
-def fetch_next_x(alfa, d)
-  @x[:x] = @x[:x] + alfa * d[0]
-  @x[:y] = @x[:y] + alfa * d[1]
-  @x
-end
-
-def fetch_beta(g1, d)
+def fletcher_reeves(g1, d)
   multiplix1 = [g1[0] * Q()[0] + g1[1] * Q()[1],
                 g1[0] * Q()[2] + g1[1] * Q()[3]]
   numerator = multiplix1[0] * d[0] + multiplix1[1] * d[1]
@@ -48,9 +57,15 @@ def fetch_beta(g1, d)
   numerator / denumerator.to_f
 end
 
-def fetch_dk(g1, beta, d)
-  [-g1[0] + beta * d[0],
-   -g1[1] + beta * d[1]]
+def hestenes_stiefel(g1, d)
+  g1[0] * g1[0] + g1[1] * g1[1] / (d[0] * (-d[0]) + d[1] * (-d[1])).to_f
+end
+
+def polak_ribiere(g1, d)
+  multiplix1 = [d[0] * Q()[0] + d[1] * Q()[1],
+                d[0] * Q()[2] + d[1] * Q()[3]]
+  denumerator = multiplix1[0] * d[0] + multiplix1[1] * d[1]
+  g1[0] * g1[0] + g1[1] * g1[1] / denumerator.to_f
 end
 
 def minimize
@@ -63,7 +78,7 @@ def minimize
     alfa = -(gk_x_dk(g, d) / dk_Q_dk(g, d).to_f)
     @x = fetch_next_x(alfa, d)
     g = fetch_gk
-    beta = fetch_beta(g, d)
+    beta = polak_ribiere(g, d)
     d = fetch_dk(g, beta, d)
   end
   @x
