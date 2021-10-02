@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# Gradient Descent Algorithm applied in Ruby.
 
 require 'rubocop'
 require 'json'
