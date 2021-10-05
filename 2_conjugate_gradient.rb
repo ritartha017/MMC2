@@ -11,6 +11,7 @@ require 'rubocop'
 @b = 3
 @x = { x: @a, y: @b } # =>x0
 @k = 0
+EPSILON = 10**-5
 
 def fetch_partial_derivatives
   [2 * @a * @x[:x] + 3 * @x[:y] - @a,
@@ -41,7 +42,7 @@ def gk_x_dk(g, d)
   g[0] * d[0] + g[1] * d[1]
 end
 
-def dk_Q_dk(_g, d)
+def dk_Q_dk(g, d)
   multiplix1 = [d[0] * Q()[0] + d[1] * Q()[1],
                 d[0] * Q()[2] + d[1] * Q()[3]]
   multiplix1[0] * d[0] + multiplix1[1] * d[1]
@@ -80,6 +81,7 @@ def minimize
     g = fetch_gk
     beta = polak_ribiere(g, d)
     d = fetch_dk(g, beta, d)
+    break if beta <= EPSILON
   end
   @x
 end
