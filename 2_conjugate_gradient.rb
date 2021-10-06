@@ -13,18 +13,16 @@ require 'rubocop'
 @k = 0
 EPSILON = 10**-5
 
-def fetch_partial_derivatives
-  [2 * @a * @x[:x] + 3 * @x[:y] - @a,
-   3 * @x[:x] + 2 * @b * @x[:y] - @b]
+def fetch_partial_derivatives(x)
+  [2 * @a * x[:x] + 3 * x[:y] - @a,
+   3 * x[:x] + 2 * @b * x[:y] - @b]
 end
 
-def Q
-  [2 * @a, 3,
-   3, 2 * @b]
-end
+Q = [2 * @a, 3,
+     3, 2 * @b].freeze
 
-def fetch_gk
-  fetch_partial_derivatives
+def fetch_gk(x)
+  fetch_partial_derivatives(x)
 end
 
 def fetch_dk(g1, beta, d)
@@ -42,18 +40,18 @@ def gk_x_dk(g, d)
   g[0] * d[0] + g[1] * d[1]
 end
 
-def dk_Q_dk(g, d)
-  multiplix1 = [d[0] * Q()[0] + d[1] * Q()[1],
-                d[0] * Q()[2] + d[1] * Q()[3]]
+def dk_Q_dk(_g, d)
+  multiplix1 = [d[0] * Q[0] + d[1] * Q[1],
+                d[0] * Q[2] + d[1] * Q[3]]
   multiplix1[0] * d[0] + multiplix1[1] * d[1]
 end
 
 def fletcher_reeves(g1, d)
-  multiplix1 = [g1[0] * Q()[0] + g1[1] * Q()[1],
-                g1[0] * Q()[2] + g1[1] * Q()[3]]
+  multiplix1 = [g1[0] * Q[0] + g1[1] * Q[1],
+                g1[0] * Q[2] + g1[1] * Q[3]]
   numerator = multiplix1[0] * d[0] + multiplix1[1] * d[1]
-  multiplix3 = [d[0] * Q()[0] + d[1] * Q()[1],
-                d[0] * Q()[2] + d[1] * Q()[3]]
+  multiplix3 = [d[0] * Q[0] + d[1] * Q[1],
+                d[0] * Q[2] + d[1] * Q[3]]
   denumerator = multiplix3[0] * d[0] + multiplix3[1] * d[1]
   numerator / denumerator.to_f
 end
@@ -63,25 +61,30 @@ def hestenes_stiefel(g1, d)
 end
 
 def polak_ribiere(g1, d)
-  multiplix1 = [d[0] * Q()[0] + d[1] * Q()[1],
-                d[0] * Q()[2] + d[1] * Q()[3]]
+  multiplix1 = [d[0] * Q[0] + d[1] * Q[1],
+                d[0] * Q[2] + d[1] * Q[3]]
   denumerator = multiplix1[0] * d[0] + multiplix1[1] * d[1]
   g1[0] * g1[0] + g1[1] * g1[1] / denumerator.to_f
 end
 
 def minimize
-  g = fetch_gk
+  g = fetch_gk(@x)
+  p "G= #{g}"
   d = [-g[0], -g[1]]
   return if (g[0]).zero? && (g[1]).zero?
 
   until (g[0]).zero? && (g[1]).zero?
     @k += 1
     alfa = -(gk_x_dk(g, d) / dk_Q_dk(g, d).to_f)
+    p "alfa= #{alfa}"
     @x = fetch_next_x(alfa, d)
-    g = fetch_gk
-    beta = polak_ribiere(g, d)
+    p "x= #{@x}"
+    g = fetch_gk(@x)
+    p "G= #{g}"
+    beta = fletcher_reeves(g, d)
+    puts "B= #{beta}\n\n"
+    break if g[0] <= EPSILON && g[1] <= EPSILON
     d = fetch_dk(g, beta, d)
-    break if beta <= EPSILON
   end
   @x
 end
