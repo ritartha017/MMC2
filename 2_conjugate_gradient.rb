@@ -53,10 +53,8 @@ end
 def minimize
   alphak = xk1 = beta = k = 0
   xk = [@a, @b]
-  dk1 = []
   gk1 = fetch_partial_derivatives(xk[0], xk[1])
-  dk1[0] = -gk1[0]
-  dk1[1] = -gk1[1]
+  dk1 = [-gk1[0], -gk1[1]]
   p "G= #{gk1}"
   loop do
     k += 1
