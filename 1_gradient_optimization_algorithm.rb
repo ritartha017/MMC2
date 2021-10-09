@@ -2,14 +2,13 @@
 # Gradient Descent Algorithm applied in Ruby.
 
 require 'rubocop'
-require 'json'
 require 'yaml'
 
 EPSELON = 10**-6
 SIGMA = 0.06
 GAMMA = 0.5
 
-@a = 3
+@a = 4
 @b = 3
 @x = { x: @a, y: @b } # =>x0
 @lamda = 1
@@ -41,8 +40,7 @@ def pp_print
 end
 
 def fetch_local_minimum
-  @magnitude_fz = 100_000_000
-  until @magnitude_fz < EPSELON
+  loop do
     @fx = substitute_into_fxy(@x[:x], @x[:y])
     @delta_fx = fetch_partial_derivatives(@x[:x], @x[:y])
     @magnitude_fx = get_magnitude(@delta_fx[:x], @delta_fx[:y])
@@ -61,6 +59,7 @@ def fetch_local_minimum
 
     @x = @z
     @k += 1
+    break if @magnitude_fz < EPSELON
   end
   @fz
 end
