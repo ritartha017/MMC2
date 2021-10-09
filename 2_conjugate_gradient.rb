@@ -5,89 +5,72 @@
 # Fletcher Reeves Algorithm
 # Polak-Ribiere Algorithm
 
-require 'rubocop'
+# require 'rubocop'
 
 @a = 4
 @b = 3
-@x = { x: @a, y: @b } # =>x0
-@k = 0
-EPSILON = 10**-5
 
-def fetch_partial_derivatives(x)
-  [2 * @a * x[:x] + 3 * x[:y] - @a,
-   3 * x[:x] + 2 * @b * x[:y] - @b]
+def fetch_partial_derivatives(x, y)
+  [2 * @a * x + 3 * y - @a,
+   3 * x + 2 * @b * y - @b]
 end
 
 Q = [2 * @a, 3,
      3, 2 * @b].freeze
 
-def fetch_gk(x)
-  fetch_partial_derivatives(x)
+def fetch_alpha(gk, dk)
+  gk_dk = gk[0] * dk[0] + gk[1] * dk[1]
+  dk_q = [
+    dk[0] * Q[0] + dk[1] * Q[1],
+    dk[0] * Q[2] + dk[1] * Q[3]
+  ]
+
+  res = gk_dk / (dk_q[0] * dk[0] + dk_q[1] * dk[1]).to_f
+  res.nan? || res.infinite? ? 0 : res
 end
 
-def fetch_dk(g1, beta, d)
-  [-g1[0] + beta * d[0],
-   -g1[1] + beta * d[1]]
+def fetch_x(xk, alphak, dk)
+  [xk[0] + alphak * dk[0],
+   xk[1] + alphak * dk[1]]
 end
 
-def fetch_next_x(alfa, d)
-  @x[:x] = @x[:x] + alfa * d[0]
-  @x[:y] = @x[:y] + alfa * d[1]
-  @x
+def fetch_beta(gk1, dk)
+  gk1_q = [gk1[0] * Q[0] + gk1[1] * Q[1],
+           gk1[0] * Q[2] + gk1[1] * Q[3]]
+  gk1_q_dk = gk1_q[0] * dk[0] + gk1_q[1] * dk[1]
+  dk_q = [dk[0] * Q[0] + dk[1] * Q[1], dk[0] * Q[2] + dk[1] * Q[3]]
+  dk_q_dk = dk[0] * dk_q[0] + dk[1] * dk_q[1]
+
+  res = gk1_q_dk / dk_q_dk.to_f
+  res.nan? || res.infinite? ? 0 : res
 end
 
-def gk_x_dk(g, d)
-  g[0] * d[0] + g[1] * d[1]
-end
-
-def dk_Q_dk(_g, d)
-  multiplix1 = [d[0] * Q[0] + d[1] * Q[1],
-                d[0] * Q[2] + d[1] * Q[3]]
-  multiplix1[0] * d[0] + multiplix1[1] * d[1]
-end
-
-def fletcher_reeves(g1, d)
-  multiplix1 = [g1[0] * Q[0] + g1[1] * Q[1],
-                g1[0] * Q[2] + g1[1] * Q[3]]
-  numerator = multiplix1[0] * d[0] + multiplix1[1] * d[1]
-  multiplix3 = [d[0] * Q[0] + d[1] * Q[1],
-                d[0] * Q[2] + d[1] * Q[3]]
-  denumerator = multiplix3[0] * d[0] + multiplix3[1] * d[1]
-  numerator / denumerator.to_f
-end
-
-def hestenes_stiefel(g1, d)
-  g1[0] * g1[0] + g1[1] * g1[1] / (d[0] * (-d[0]) + d[1] * (-d[1])).to_f
-end
-
-def polak_ribiere(g1, d)
-  multiplix1 = [d[0] * Q[0] + d[1] * Q[1],
-                d[0] * Q[2] + d[1] * Q[3]]
-  denumerator = multiplix1[0] * d[0] + multiplix1[1] * d[1]
-  g1[0] * g1[0] + g1[1] * g1[1] / denumerator.to_f
+def fetch_dk1(gk1, beta, dk)
+  [-gk1[0] + beta * dk[0],
+   -gk1[1] + beta * dk[1]]
 end
 
 def minimize
-  g = fetch_gk(@x)
-  p "G= #{g}"
-  d = [-g[0], -g[1]]
-  return if (g[0]).zero? && (g[1]).zero?
-
-  until (g[0]).zero? && (g[1]).zero?
-    @k += 1
-    alfa = -(gk_x_dk(g, d) / dk_Q_dk(g, d).to_f)
-    p "alfa= #{alfa}"
-    @x = fetch_next_x(alfa, d)
-    p "x= #{@x}"
-    g = fetch_gk(@x)
-    p "G= #{g}"
-    beta = fletcher_reeves(g, d)
-    puts "B= #{beta}\n\n"
-    break if g[0] <= EPSILON && g[1] <= EPSILON
-    d = fetch_dk(g, beta, d)
+  alphak = xk1 = beta = k = 0
+  xk = [@a, @b]
+  dk1 = []
+  gk1 = fetch_partial_derivatives(xk[0], xk[1])
+  dk1[0] = -gk1[0]
+  dk1[1] = -gk1[1]
+  p "G= #{gk1}"
+  loop do
+    k += 1
+    alphak = -fetch_alpha(gk1, dk1)
+    xk1 = fetch_x(xk, alphak, dk1)
+    gk1 = fetch_partial_derivatives(xk1[0], xk1[1])
+    beta = fetch_beta(gk1, dk1)
+    puts    "k= #{k} \n"    + "alpha= #{alphak}\n" \
+            "x= #{xk1} \n"  + "G= #{gk1} \n"       \
+            "B= #{beta}"    + "\n\n"
+    dk1 = fetch_dk1(gk1, beta, dk1)
+    xk = xk1
+    return xk if (gk1[0]).zero? && (gk1[1]).zero?
   end
-  @x
 end
 
 puts "\nx* = #{minimize}"
-puts "N iterations = #{@k}"
