@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-@a = 4
-@b = 3
+@a = 6
+@b = 2
 
 def substitute_into_fxy(x, y)
   @a * x**2 + 3 * x * y + @b * (y**2) - @a * x - @b * y
@@ -53,19 +53,20 @@ def minimize(a, b)
   gk1 = fetch_partial_derivatives(xk[0], xk[1])
   dk1 = [-gk1[0], -gk1[1]]
   magnitude_k = get_magnitude(gk1[0], gk1[1])
-  puts "g0= #{gk1}\n" + "mk0= #{magnitude_k}"
+  learning_rate = fetch_alpha(gk1, dk1)
+  puts "k = #{k}\n" + "alpha=#{learning_rate}\n" + "g = #{gk1}\n" + "M = #{magnitude_k}\n\n" 
   loop do
     k += 1
-    learning_rate = fetch_alpha(gk1, dk1)
     xk1 = fetch_next_x(xk, learning_rate, dk1)
     fxk = substitute_into_fxy(xk1[0], xk1[1])
     gk1 = fetch_partial_derivatives(xk1[0], xk1[1])
     magnitude_k1 = get_magnitude(gk1[0], gk1[1])
-    # beta = get_hestenes_stiefel_beta(magnitude_k, magnitude_k1)
-    beta = get_fletcher_reeves_beta(xk, gk1)
-    dk1 = fetch_dk1(gk1, beta, dk1)
-    puts "k= #{k} \n" + "alpha= #{learning_rate}\n" + "x = #{xk1} \n" + "g = #{gk1} \n" \
-         "B = #{beta}\n" + "Fx= #{fxk}" + "\nM = #{magnitude_k1}" + "\nd = #{dk1}\n\n"
+    beta = get_hestenes_stiefel_beta(magnitude_k, magnitude_k1)
+    # beta = get_fletcher_reeves_beta(xk, gk1)
+    dk1 = fetch_dk1(gk1, beta, dk1)       if (!gk1.all? 0)
+    learning_rate = fetch_alpha(gk1, dk1) if (!gk1.all? 0)
+    puts "k = #{k} \n" + "α = #{learning_rate}\n" + "xk= #{xk1} \n" + "∇ = #{gk1} \n" \
+         "β = #{beta}\n" + "fx= #{fxk}" + "\nM = #{magnitude_k1}" + "\nd = #{dk1}\n\n"
     xk = xk1
     magnitude_k = magnitude_k1
     return xk if (gk1[0]).zero? && (gk1[1]).zero?
@@ -73,3 +74,4 @@ def minimize(a, b)
 end
 
 puts "\nx* = #{minimize(@a, @b)}"
+# puts "\nx* = #{minimize(0, 0)}"
