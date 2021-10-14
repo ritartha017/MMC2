@@ -27,8 +27,12 @@ def fetch_x(xk, alphak, dk)
    xk[1] + alphak * dk[1]]
 end
 
-def fetch_beta(magnk, magnk1)
+def get_hestenes_stiefel_beta(magnk, magnk1)
   res = (magnk1**2).abs / (magnk**2).abs.to_f
+end
+
+def get_fletcher_reeves_beta(gk, gk1)
+  (gk1[0]*gk1[0] + gk1[1]*gk1[1])/(gk[0]*gk[0] + gk[1]*gk[1]).to_f
 end
 
 def fetch_dk1(gk1, beta, dk)
@@ -40,13 +44,13 @@ def get_magnitude(x, y)
   Math.sqrt(x**2 + y**2)
 end
 
-def minimize
+def minimize(a, b)
   alphak = xk1 = beta = k = 0
-  xk = [@a, @b]
+  xk = [a, b]
   gk1 = fetch_partial_derivatives(xk[0], xk[1])
   dk1 = [-gk1[0], -gk1[1]]
   magnk = get_magnitude(gk1[0], gk1[1])
-  puts "G0= #{gk1}\n" + "Mk0= #{magnk}"
+  puts "g0= #{gk1}\n" + "mk0= #{magnk}"
   loop do
     k += 1
     alphak = -fetch_alpha(gk1, dk1)
@@ -54,7 +58,8 @@ def minimize
     fxk = substitute_into_fxy(xk1[0], xk1[1])
     gk1 = fetch_partial_derivatives(xk1[0], xk1[1])
     magnk1 = get_magnitude(gk1[0], gk1[1])
-    beta = fetch_beta(magnk, magnk1)
+    # beta = get_hestenes_stiefel_beta(magnk, magnk1)
+    beta = get_fletcher_reeves_beta(fetch_partial_derivatives(xk[0], xk[1]), gk1)
     dk1 = fetch_dk1(gk1, beta, dk1)
     puts "k= #{k} \n"    + "alpha= #{alphak}\n"+ "x = #{xk1} \n" + "g = #{gk1} \n" \
          "B = #{beta}\n"   + "Fx= #{fxk}" + "\nM = #{magnk1}" +"\nd = #{dk1}\n\n"
@@ -63,4 +68,4 @@ def minimize
   end
 end
 
-puts "\nx* = #{minimize}"
+puts "\nx* = #{minimize(@a, @b)}"

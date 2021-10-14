@@ -7,7 +7,7 @@
 
 # require 'rubocop'
 
-@a = 4
+@a = 6
 @b = 3
 
 def fetch_partial_derivatives(x, y)
