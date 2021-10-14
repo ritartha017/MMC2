@@ -24,9 +24,9 @@ def fetch_alpha(gk, dk)
   res = gk_dk / (dk_q[0] * dk[0] + dk_q[1] * dk[1]).to_f.send(:*, -1)
 end
 
-def fetch_x(xk, alphak, dk)
-  [xk[0] + alphak * dk[0],
-   xk[1] + alphak * dk[1]]
+def fetch_next_x(xk, learning_rate, dk)
+  [xk[0] + learning_rate * dk[0],
+   xk[1] + learning_rate * dk[1]]
 end
 
 def get_hestenes_stiefel_beta(magnitude_k, magnitude_k1)
@@ -48,7 +48,7 @@ def get_magnitude(x, y)
 end
 
 def minimize(a, b)
-  alphak = xk1 = beta = k = 0
+  learning_rate = xk1 = beta = k = 0
   xk = [a, b]
   gk1 = fetch_partial_derivatives(xk[0], xk[1])
   dk1 = [-gk1[0], -gk1[1]]
@@ -56,15 +56,15 @@ def minimize(a, b)
   puts "g0= #{gk1}\n" + "mk0= #{magnitude_k}"
   loop do
     k += 1
-    alphak = fetch_alpha(gk1, dk1)
-    xk1 = fetch_x(xk, alphak, dk1)
+    learning_rate = fetch_alpha(gk1, dk1)
+    xk1 = fetch_next_x(xk, learning_rate, dk1)
     fxk = substitute_into_fxy(xk1[0], xk1[1])
     gk1 = fetch_partial_derivatives(xk1[0], xk1[1])
     magnitude_k1 = get_magnitude(gk1[0], gk1[1])
     # beta = get_hestenes_stiefel_beta(magnitude_k, magnitude_k1)
     beta = get_fletcher_reeves_beta(xk, gk1)
     dk1 = fetch_dk1(gk1, beta, dk1)
-    puts "k= #{k} \n" + "alpha= #{alphak}\n" + "x = #{xk1} \n" + "g = #{gk1} \n" \
+    puts "k= #{k} \n" + "alpha= #{learning_rate}\n" + "x = #{xk1} \n" + "g = #{gk1} \n" \
          "B = #{beta}\n" + "Fx= #{fxk}" + "\nM = #{magnitude_k1}" + "\nd = #{dk1}\n\n"
     xk = xk1
     magnitude_k = magnitude_k1
