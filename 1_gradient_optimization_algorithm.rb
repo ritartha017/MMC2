@@ -24,7 +24,7 @@ def substitute_into_fxy(x, y)
   @a * x**2 + 3 * x * y + @b * (y**2) - @a * x - @b * y
 end
 
-def substitute_into_z(xk, delta_fx)
+def next_point(xk, delta_fx)
   { x: xk[:x] - @lamda * (delta_fx[:x]),
     y: xk[:y] - @lamda * (delta_fx[:y]) }
 end
@@ -36,7 +36,7 @@ end
 def pp_print
   out = { "x#{@k}" => [{ xcoordinate: @x, fx: @fx, Δx: @delta_fx, magnitude: @magnitude_fx },
                        { zcoordinate: @z, fz: @fz, Δy: @delta_fz, magnitude: @magnitude_fz },
-                       lamba: @lamda, condition: @condition] }
+                         lamda: @lamda, condition: @condition] }
   puts out.to_yaml
 end
 
@@ -47,7 +47,7 @@ def fetch_local_minimum
     @magnitude_fx = get_magnitude(@delta_fx[:x], @delta_fx[:y])
 
     loop do
-      @z = substitute_into_z(@x, @delta_fx)
+      @z = next_point(@x, @delta_fx)
       @fz = substitute_into_fxy(@z[:x], @z[:y])
       @delta_fz = fetch_partial_derivatives(@z[:x], @z[:y])
       @magnitude_fz = get_magnitude(@delta_fz[:x], @delta_fz[:y])
@@ -65,4 +65,4 @@ def fetch_local_minimum
   @fz
 end
 
-fetch_local_minimum
+stationary_point = fetch_local_minimum
