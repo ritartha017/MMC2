@@ -5,7 +5,7 @@
 # Fletcher Reeves Algorithm
 # Polak-Ribiere Algorithm
 
-require 'rubocop'
+# require 'rubocop'
 
 @a = 6
 @b = 3
