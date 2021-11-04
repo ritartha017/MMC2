@@ -35,12 +35,12 @@ def fetch_next_x(xk, learning_rate, dk)
    xk[1] + learning_rate * dk[1]]
 end
 
-def get_hestenes_stiefel_beta(g1, d0)
-  g1TQ = [g1[0] * Q[0] + g1[1] * Q[1], g1[0] * Q[2] + g1[1] * Q[3]]
-  numerator = g1TQ[0] * d0[0] + g1TQ[1] * d0[1]
+def get_hestenes_stiefel_beta(gk1, dk)
+  gk1TQ = [gk1[0] * Q[0] + gk1[1] * Q[1], gk1[0] * Q[2] + gk1[1] * Q[3]]
+  numerator = gk1TQ[0] * dk[0] + gk1TQ[1] * dk[1]
 
-  d0TQ = [d0[0] * Q[0] + d0[1] * Q[1], d0[0] * Q[2] + d0[1] * Q[3]]
-  denominator = d0TQ[0] * d0[0] + d0TQ[1] * d0[1]
+  dkTQ = [dk[0] * Q[0] + dk[1] * Q[1], dk[0] * Q[2] + dk[1] * Q[3]]
+  denominator = dkTQ[0] * dk[0] + dkTQ[1] * dk[1]
 
   res = numerator.to_f / denominator
 end
