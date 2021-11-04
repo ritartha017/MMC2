@@ -36,7 +36,7 @@ end
 def pp_print
   out = { "x#{@k}" => [{ xcoordinate: @x, fx: @fx, Δx: @delta_fx, magnitude: @magnitude_fx },
                        { zcoordinate: @z, fz: @fz, Δy: @delta_fz, magnitude: @magnitude_fz },
-                         lamda: @lamda, condition: @condition] }
+                       lamda: @lamda, condition: @condition] }
   puts out.to_yaml
 end
 

@@ -1,6 +1,12 @@
 # frozen_string_literal: true
 
-@a = 6
+# Conjugate Gradient -
+# Fletcher Reeves Algorithm,
+# Hestenes Stiefel Algorithm.
+
+# TODO: P-R Algorithm
+
+@a = 4
 @b = 3
 
 def substitute_into_fxy(x, y)
@@ -29,14 +35,25 @@ def fetch_next_x(xk, learning_rate, dk)
    xk[1] + learning_rate * dk[1]]
 end
 
-def get_hestenes_stiefel_beta(magnitude_k, magnitude_k1)
-  res = (magnitude_k1**2).abs / (magnitude_k**2).abs.to_f
+def get_hestenes_stiefel_beta(g1, d0)
+  g1TQ = [g1[0] * Q[0] + g1[1] * Q[1], g1[0] * Q[2] + g1[1] * Q[3]]
+  numerator = g1TQ[0] * d0[0] + g1TQ[1] * d0[1]
+
+  d0TQ = [d0[0] * Q[0] + d0[1] * Q[1], d0[0] * Q[2] + d0[1] * Q[3]]
+  denominator = d0TQ[0] * d0[0] + d0TQ[1] * d0[1]
+
+  res = numerator.to_f / denominator
 end
 
 def get_fletcher_reeves_beta(xk, gk1)
   gk = fetch_gradient(xk[0], xk[1])
   (gk1[0] * gk1[0] + gk1[1] * gk1[1]) / (gk[0] * gk[0] + gk[1] * gk[1]).to_f
 end
+
+# 2 metod F-R :
+# def get_hestenes_stiefel_beta(magnitude_k, magnitude_k1)
+#   res = (magnitude_k1**2).abs / (magnitude_k**2).abs.to_f
+# end
 
 def fetch_dk1(gk1, beta, dk)
   [-gk1[0] + beta * dk[0],
@@ -62,10 +79,10 @@ def minimize(a, b)
     fxk = substitute_into_fxy(xk1[0], xk1[1])
     gk1 = fetch_gradient(xk1[0], xk1[1])
     magnitude_k1 = get_magnitude(gk1[0], gk1[1])
-    beta = get_hestenes_stiefel_beta(magnitude_k, magnitude_k1)
+    beta = get_hestenes_stiefel_beta(gk1, dk1)
     # beta = get_fletcher_reeves_beta(xk, gk1)
-    dk1 = fetch_dk1(gk1, beta, dk1)       if (!gk1.all? 0)
-    learning_rate = learning_rate(gk1, dk1) if (!gk1.all? 0)
+    dk1 = fetch_dk1(gk1, beta, dk1)       unless gk1.all? 0
+    learning_rate = learning_rate(gk1, dk1) unless gk1.all? 0
     puts "k = #{k} \n" + "α = #{learning_rate}\n" + "xk= #{xk1} \n" + "∇ = #{gk1} \n" \
          "β = #{beta}\n" + "fx= #{fxk}" + "\nM = #{magnitude_k1}" + "\nd = #{dk1}\n\n"
     xk = xk1
@@ -76,5 +93,3 @@ end
 
 puts "\nx* = #{minimize(@a, @b)}"
 # puts "\nx* = #{minimize(0, 0)}"
-
-
