@@ -79,9 +79,9 @@ def minimize(a, b)
     fxk = substitute_into_fxy(xk1[0], xk1[1])
     gk1 = fetch_gradient(xk1[0], xk1[1])
     magnitude_k1 = get_magnitude(gk1[0], gk1[1])
-    beta = get_hestenes_stiefel_beta(gk1, dk1)
-    # beta = get_fletcher_reeves_beta(xk, gk1)
-    dk1 = fetch_dk1(gk1, beta, dk1)       unless gk1.all? 0
+    # beta = get_hestenes_stiefel_beta(gk1, dk1)
+    beta = get_fletcher_reeves_beta(xk, gk1)
+    dk1 = fetch_dk1(gk1, beta, dk1) unless gk1.all? 0
     learning_rate = learning_rate(gk1, dk1) unless gk1.all? 0
     puts "k = #{k} \n" + "α = #{learning_rate}\n" + "xk= #{xk1} \n" + "∇ = #{gk1} \n" \
          "β = #{beta}\n" + "fx= #{fxk}" + "\nM = #{magnitude_k1}" + "\nd = #{dk1}\n\n"
